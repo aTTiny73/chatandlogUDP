@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -16,8 +15,8 @@ func main() {
 	}
 	CONNECT := arguments[1]
 
-	s, err := net.ResolveUDPAddr("udp4", CONNECT)
-	c, err := net.DialUDP("udp4", nil, s)
+	s, err := net.ResolveUDPAddr("udp", CONNECT)
+	c, err := net.DialUDP("udp", nil, s)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -32,10 +31,6 @@ func main() {
 		text, _ := reader.ReadString('\n')
 		data := []byte(text + "\n")
 		_, err = c.Write(data)
-		if strings.TrimSpace(string(data)) == "STOP" {
-			fmt.Println("Exiting UDP client!")
-			return
-		}
 
 		if err != nil {
 			fmt.Println(err)
