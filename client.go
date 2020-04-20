@@ -7,7 +7,20 @@ import (
 	"os"
 )
 
+func readUDP(conn *net.UDPConn) {
+	for {
+		buffer := make([]byte, 1024)
+		n, _, err := conn.ReadFromUDP(buffer)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		fmt.Printf("Server: %s\n", string(buffer[0:n]))
+	}
+}
+
 func main() {
+
 	arguments := os.Args
 	if len(arguments) == 1 {
 		fmt.Println("Please provide a host:port string")
@@ -15,34 +28,28 @@ func main() {
 	}
 	CONNECT := arguments[1]
 
-	s, err := net.ResolveUDPAddr("udp", CONNECT)
-	c, err := net.DialUDP("udp", nil, s)
+	addr, err := net.ResolveUDPAddr("udp", CONNECT)
+	conn, err := net.DialUDP("udp", nil, addr)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	fmt.Printf("The UDP server is %s\n", c.RemoteAddr().String())
-	defer c.Close()
+	fmt.Printf("The UDP server is %s\n", conn.RemoteAddr().String())
+	defer conn.Close()
 
 	for {
+
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print(">> ")
 		text, _ := reader.ReadString('\n')
-		data := []byte(text + "\n")
-		_, err = c.Write(data)
+		data := []byte(text)
+		_, err = conn.Write(data)
 
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
-
-		buffer := make([]byte, 1024)
-		n, _, err := c.ReadFromUDP(buffer)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		fmt.Printf("Reply: %s\n", string(buffer[0:n]))
+		go readUDP(conn)
 	}
 }
