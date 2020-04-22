@@ -9,12 +9,13 @@ import (
 	"github.com/aTTiny73/multilogger/logs"
 )
 
+// sendTime sends the time to all the clients every 5 sec
 func sendTime(conn *net.UDPConn, addreses *map[string]*net.UDPAddr, log *logs.MultipleLog) {
 
 	for {
 
 		time.Sleep(5 * time.Second)
-
+		log.Info("Timer triggered")
 		TIME := fmt.Sprint(time.Now().Format("15:04:05"))
 
 		for _, v := range *addreses {
@@ -23,7 +24,7 @@ func sendTime(conn *net.UDPConn, addreses *map[string]*net.UDPAddr, log *logs.Mu
 
 			_, err := conn.WriteToUDP(data, v)
 			if err != nil {
-				fmt.Println(err)
+				log.Warn(err)
 				return
 			}
 		}
@@ -49,13 +50,13 @@ func main() {
 
 	s, err := net.ResolveUDPAddr("udp", PORT)
 	if err != nil {
-		fmt.Println(err)
+		log.Warn(err)
 		return
 	}
 
 	connection, err := net.ListenUDP("udp", s)
 	if err != nil {
-		fmt.Println(err)
+		log.Warn(err)
 		return
 	}
 	fmt.Printf("Listening port: %s \n", PORT)
@@ -75,7 +76,7 @@ func main() {
 		data := []byte("Message recived")
 		_, err = connection.WriteToUDP(data, addr)
 		if err != nil {
-			fmt.Println(err)
+			log.Warn(err)
 			return
 		}
 	}
